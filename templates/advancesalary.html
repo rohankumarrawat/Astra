@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+<head>
+
+	<!-- Meta Tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Leave</title>
+
+	<meta name="description" content="Leave">
+	<meta name="keywords" content="Leave">
+	<meta name="author" content="Devansh Bullion">
+	<meta name="robots" content="index, follow">
+
+	{% include 'css.html' %}
+
+</head>
+
+<body>
+
+	<!-- Main Wrapper -->
+	<div class="main-wrapper">
+
+		<!-- Header -->
+		{% include 'header.html' %}
+		<!-- /Header -->
+
+		<!-- Sidebar -->
+		{% include 'sidebar.html' %}
+
+
+		<!-- Page Wrapper -->
+
+		<div class="page-wrapper" style="min-height: 570px;">
+			<div class="content">
+
+				<!-- Breadcrumb -->
+				<div class="d-md-flex d-block align-items-center justify-content-between page-breadcrumb mb-3">
+					<div class="my-auto mb-2">
+						<h2 class="mb-1">Advance Salary</h2>
+					</div>
+					<div class="d-flex my-xl-auto right-content align-items-center flex-wrap ">
+						<!-- <div class="me-2 mb-2">
+							<div class="dropdown">
+								<a href="javascript:void(0);" class="dropdown-toggle btn btn-white d-inline-flex align-items-center" data-bs-toggle="dropdown">
+									<i class="ti ti-file-export me-1"></i>Export
+								</a>
+								<ul class="dropdown-menu  dropdown-menu-end p-3">
+									<li>
+										<a href="javascript:void(0);" class="dropdown-item rounded-1"><i class="ti ti-file-type-pdf me-1"></i>Export as PDF</a>
+									</li>
+									<li>
+										<a href="javascript:void(0);" class="dropdown-item rounded-1"><i class="ti ti-file-type-xls me-1"></i>Export as Excel </a>
+									</li>
+								</ul>
+							</div>
+						</div> -->
+						{% if not request.user.is_superuser %}
+					<div class="mb-2">
+    <a href="#" 
+       data-bs-toggle="modal" 
+       data-bs-target="#request_salary_modal"
+       class="btn btn-primary d-flex align-items-center">
+        <i class="ti ti-circle-plus me-2"></i>Request Salary
+    </a>
+</div>
+						{% endif %}
+
+					</div>
+				</div>
+				<!-- /Breadcrumb -->
+
+				<!-- Leaves Info -->
+
+				<!-- /Leaves Info -->
+
+				<!-- Leaves list -->
+				<div class="card">
+
+					<div class="card-body p-0">
+						<div class="custom-datatable-filter table-responsive">
+							<div id="DataTables_Table_0_wrapper" class="dataTables_wrapper dt-bootstrap5 no-footer">
+
+								<div class="row dt-row">
+									<div class="col-sm-12 table-responsive">
+				{% if applications %}
+<table class="table datatable dataTable no-footer" id="DataTables_Table_0" aria-describedby="DataTables_Table_0_info">
+    <thead class="thead-light">
+        <tr>
+            <th>Leave Type</th>
+            <th>From</th>
+            <th>Approved By</th>
+            <th>To</th>
+
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+ <tbody>
+    {% for l in applications %}
+    <tr>
+
+        <!-- Amount Requested -->
+        <td>
+            <div class="d-flex align-items-center">
+                <p class="fs-14 fw-medium mb-0">₹ {{ l.application.amount_requested }}</p>
+
+                {% if l.application.reason %}
+                <a href="#" class="ms-2" data-bs-toggle="tooltip" data-bs-placement="right"
+                    data-bs-title="{{ l.application.reason }}">
+                    <i class="ti ti-info-circle text-info"></i>
+                </a>
+                {% endif %}
+            </div>
+        </td>
+
+        <!-- Salary Month -->
+        <td>
+            {{ l.application.salary_month|date:"F Y" }}
+        </td>
+
+        <!-- Approved By -->
+        <td>
+            <div class="d-flex align-items-center">
+                <div class="ms-2">
+                    <h6 class="fw-medium mb-0">
+                        {% if l.application.superadmin_approval %}
+                            Superadmin
+                        {% elif l.application.admin_approval %}
+                            {{ l.application.employee.manager.user.get_full_name }}
+                        {% else %}
+                            Pending
+                        {% endif %}
+                    </h6>
+                    <span class="fs-12 fw-normal">
+                        {% if l.application.superadmin_approval %}
+                            Superadmin
+                        {% elif l.application.admin_approval %}
+                            Manager
+                        {% else %}
+                            Not yet approved
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </td>
+
+        <!-- Repayment Method -->
+        <td>
+            {{ l.application.repayment_method|title }}
+            {% if l.application.repayment_method == 'emi' %}
+                ({{ l.application.emi_months }} Months)
+            {% endif %}
+        </td>
+
+        <!-- Status -->
+        <td>
+            <div class="dropdown">
+                <a href="javascript:void(0);" class="dropdown-toggle btn btn-sm btn-white d-inline-flex align-items-center" data-bs-toggle="dropdown">
+                    <span class="rounded-circle d-flex justify-content-center align-items-center me-2 
+                        {% if l.application.superadmin_approval or l.application.admin_approval %}
+                            bg-transparent-success
+                        {% elif l.application.superadmin_cancelled or l.application.admin_cancelled %}
+                            bg-transparent-danger
+                        {% else %}
+                            bg-transparent-purple
+                        {% endif %}">
+                        <i class="ti ti-point-filled 
+                            {% if l.application.superadmin_approval or l.application.admin_approval %}
+                                text-success
+                            {% elif l.application.superadmin_cancelled or l.application.admin_cancelled %}
+                                text-danger
+                            {% else %}
+                                text-purple
+                            {% endif %}"></i>
+                    </span>
+
+                    {% if l.application.superadmin_approval %}
+                        Approved
+                    {% elif l.application.superadmin_cancelled %}
+                        Declined By Super Admin
+                    {% elif l.application.admin_cancelled %}
+                        Declined By Admin
+                    {% elif l.application.admin_approval %}
+                        Manager Approved – Pending Admin
+                    {% else %}
+                        New
+                    {% endif %}
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end p-3">
+                    <li>
+                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">
+                            <span class="rounded-circle bg-transparent-success me-2 d-flex justify-content-center align-items-center">
+                                <i class="ti ti-point-filled text-success"></i>
+                            </span>
+                            Approved
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">
+                            <span class="rounded-circle bg-transparent-danger me-2 d-flex justify-content-center align-items-center">
+                                <i class="ti ti-point-filled text-danger"></i>
+                            </span>
+                            Declined
+                        </a>
+                    </li>
+                    <li>
+                        <a href="javascript:void(0);" class="dropdown-item d-flex align-items-center">
+                            <span class="rounded-circle bg-transparent-purple me-2 d-flex justify-content-center align-items-center">
+                                <i class="ti ti-point-filled text-purple"></i>
+                            </span>
+                            New
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </td>
+
+        <!-- Actions -->
+        <td>
+            <div class="action-icon d-inline-flex">
+           
+{% if not l.admin_approval and not l.superadmin_approval and not l.admin_cancelled and not l.superadmin_cancelled %}
+<a href="javascript:void(0);" 
+   class="open-delete-modal" 
+   data-id="{{ l.id }}" 
+   data-bs-toggle="modal" 
+   data-bs-target="#delete_modal">
+    <i class="ti ti-trash"></i>
+</a>
+{% endif %}
+
+                <!-- {% if not l.application.superadmin_cancelled and not l.application.admin_cancelled %}
+                    
+                    {% if request.user.is_superuser %}
+                        {% if not l.application.superadmin_approval %}
+                            <a href="javascript:void(0);" class="ms-2 update-salary-status"
+                               data-salary-id="{{ l.application.id }}" data-action="approve">
+                                <i class="ti ti-check text-success" title="Approve"></i>
+                            </a>
+                            <a href="javascript:void(0);" class="ms-2 update-salary-status"
+                               data-salary-id="{{ l.application.id }}" data-action="decline">
+                                <i class="ti ti-x text-danger" title="Decline"></i>
+                            </a>
+                        {% endif %}
+
+                    {% elif l.application.employee.under == request.user %}
+                        {% if not l.application.admin_approval %}
+                            <a href="javascript:void(0);" class="ms-2 update-salary-status"
+                               data-salary-id="{{ l.application.id }}" data-action="approve">
+                                <i class="ti ti-check text-success" title="Approve"></i>
+                            </a>
+                            <a href="javascript:void(0);" class="ms-2 update-salary-status"
+                               data-salary-id="{{ l.application.id }}" data-action="decline">
+                                <i class="ti ti-x text-danger" title="Decline"></i>
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                {% endif %} -->
+
+                {% comment %}
+Only show action buttons when:
+- NOT cancelled by admin
+- NOT cancelled by superadmin
+{% endcomment %}
+{% if not l.application.superadmin_cancelled and not l.application.admin_cancelled %}
+
+    {# ===== SUPERADMIN APPROVAL BUTTONS ===== #}
+    {% if request.user.is_superuser %}
+        {% if not l.application.superadmin_approval %}
+            <a href="javascript:void(0);" 
+               class="ms-2 update-advance-status"
+               data-salary-id="{{ l.application.id }}" 
+               data-action="approve">
+                <i class="ti ti-check text-success" title="Approve"></i>
+            </a>
+
+            <a href="javascript:void(0);" 
+               class="ms-2 update-advance-status"
+               data-salary-id="{{ l.application.id }}" 
+               data-action="decline">
+                <i class="ti ti-x text-danger" title="Decline"></i>
+            </a>
+        {% endif %}
+
+    {# ===== ADMIN (EMPLOYEE UNDER) APPROVAL BUTTONS ===== #}
+    {% elif l.application.employee.under == request.user %}
+        {% if not l.application.admin_approval %}
+            <a href="javascript:void(0);" 
+               class="ms-2 update-advance-status"
+               data-salary-id="{{ l.application.id }}" 
+               data-action="approve">
+                <i class="ti ti-check text-success" title="Approve"></i>
+            </a>
+
+            <a href="javascript:void(0);" 
+               class="ms-2 update-advance-status"
+               data-salary-id="{{ l.application.id }}" 
+               data-action="decline">
+                <i class="ti ti-x text-danger" title="Decline"></i>
+            </a>
+        {% endif %}
+    {% endif %}
+
+{% endif %}
+
+            </div>
+        </td>
+
+    </tr>
+
+    {% empty %}
+    <tr>
+        <td colspan="7" class="text-center">No advance salary records found.</td>
+    </tr>
+    {% endfor %}
+</tbody>
+
+</table>
+{% endif %}
+
+
+
+									</div>
+								</div>
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- /Leaves list -->
+
+
+			</div>
+
+
+
+			<div class="footer d-sm-flex align-items-center justify-content-between border-top bg-white p-3">
+				<p class="mb-0">2025 © Webx Hubs.</p>
+				<p>Designed &amp; Developed By <a href="javascript:void(0);" class="text-primary">Webx Hubs</a></p>
+			</div>
+		</div>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+        <script>
+         $(document).on("click", ".update-advance-status", function () {
+    let salaryId = $(this).data("salary-id");
+    let action = $(this).data("action");
+
+    // If decline → send immediately
+    if (action === "decline") {
+        updateAdvanceRequest(salaryId, action, false, null);
+        return;
+    }
+
+    // If approve → show interest popup
+    if (action === "approve") {
+        Swal.fire({
+            title: "Add Interest?",
+            text: "Do you want to add an interest rate to this advance?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Add Interest",
+            cancelButtonText: "No Interest",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Ask for interest percentage
+                Swal.fire({
+                    title: "Enter Interest (%)",
+                    input: "number",
+                    inputAttributes: {
+                        min: 0,
+                        max: 100,
+                        step: 0.1
+                    },
+                    inputPlaceholder: "e.g., 5",
+                    showCancelButton: true,
+                    confirmButtonText: "Apply",
+                    preConfirm: (value) => {
+                        if (!value || value <= 0) {
+                            Swal.showValidationMessage("Please enter a valid interest %");
+                            return false;
+                        }
+                        return value;
+                    }
+                }).then((inputResult) => {
+                    if (inputResult.isConfirmed) {
+                        updateAdvanceRequest(
+                            salaryId,
+                            "approve",
+                            true,
+                            inputResult.value
+                        );
+                    }
+                });
+
+            } else {
+                // No interest
+                updateAdvanceRequest(salaryId, "approve", false, null);
+            }
+        });
+    }
+});
+
+// Reusable AJAX function
+function updateAdvanceRequest(id, action, interest_applicable, interest_rate) {
+    $.ajax({
+        url: "/advance/update-status/",
+        method: "POST",
+        data: {
+            csrfmiddlewaretoken: $("input[name='csrfmiddlewaretoken']").val(),
+            salary_id: id,
+            action: action,
+            interest_applicable: interest_applicable,
+            interest_rate: interest_rate,
+        },
+        success: function (res) {
+            if (res.success) {
+                Swal.fire({
+                    icon: "success",
+                    title: "Updated",
+                    timer: 1200,
+                    showConfirmButton: false
+                }).then(() => location.reload());
+            } else {
+                Swal.fire("Error", res.message, "error");
+            }
+        }
+    });
+}
+
+        </script>
+
+		<script>
+$(document).on('click', '.update-leave-status', function () {
+    const leaveId = $(this).data('leave-id');
+    
+    $.ajax({
+        url: '{% url "update_leave_status" %}',  // You'll define this view below
+        method: 'POST',
+        data: {
+            'leave_id': leaveId,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function (response) {
+            if (response.success) {
+                location.reload(); // Refresh to show updated status
+            } else {
+                alert(response.message || "Error updating status.");
+            }
+        }
+    });
+});
+</script>
+
+<div class="modal fade" id="request_salary_modal">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Request Advance Salary</h4>
+                <button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="ti ti-x"></i>
+                </button>
+            </div>
+
+            <form id="advance-salary-form" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="modal-body pb-0">
+                    <div class="row">
+
+                        <!-- Amount Requested -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Amount Requested</label>
+                                <input type="number" class="form-control" name="amount_requested" required min="1" placeholder="Enter amount">
+                            </div>
+                        </div>
+
+                        <!-- Salary Month -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Salary Month</label>
+                                <div class="input-icon-end position-relative">
+                                    <input type="text" class="form-control monthpicker" name="salary_month"
+                                        placeholder="mm/yyyy" required>
+                                    <span class="input-icon-addon">
+                                        <i class="ti ti-calendar text-gray-7"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Repayment Method -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Repayment Method</label>
+                                <select class="form-select" name="repayment_method" id="repayment_method" required>
+                                    <option value="">Select</option>
+                                    <option value="single">Single Installment</option>
+                                    <option value="emi">Monthly EMI</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- EMI Months -->
+                        <div class="col-md-6" id="emi_months_container" style="display:none;">
+                            <div class="mb-3">
+                                <label class="form-label">EMI Months</label>
+                                <input type="number" class="form-control" name="emi_months" min="1" max="24" placeholder="Number of months">
+                            </div>
+                        </div>
+
+                        <!-- Attachment -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Attachment (optional)</label>
+                                <input type="file" class="form-control" name="attachment">
+                            </div>
+                        </div>
+
+                        <!-- Reason -->
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label">Reason</label>
+                                <textarea class="form-control" name="reason" rows="3" required></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById("repayment_method").addEventListener("change", function () {
+    let emiField = document.getElementById("emi_months_container");
+    if (this.value === "emi") {
+        emiField.style.display = "block";
+    } else {
+        emiField.style.display = "none";
+    }
+});
+</script>
+<script>
+$(document).ready(function () {
+
+    // AJAX Submit
+    $("#advance-salary-form").on("submit", function (e) {
+        e.preventDefault();
+
+        let form = $(this)[0];
+        let formData = new FormData(form);
+
+        $.ajax({
+            url: "{% url 'request_advance_salary' %}",  // <-- your Django URL
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+                // Hide Modal
+                $("#request_salary_modal").modal("hide");
+
+                // Reset the form
+                $("#advance-salary-form")[0].reset();
+                $("#emi_months_container").hide();
+
+                // Success Toast
+                Swal.fire({
+                    icon: "success",
+                    title: "Request Submitted",
+                    text: "Your advance salary request has been submitted successfully!",
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+            },
+
+            error: function (xhr) {
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: xhr.responseJSON?.message || "Something went wrong!",
+                });
+            }
+        });
+    });
+
+});
+</script>
+
+
+
+
+		<div class="modal fade" id="edit_leaves">
+			<div class="modal-dialog modal-dialog-centered modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h4 class="modal-title">Edit Leave</h4>
+						<button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal"
+							aria-label="Close">
+							<i class="ti ti-x"></i>
+						</button>
+					</div>
+					<form action="leaves.html">
+						<div class="modal-body pb-0">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="mb-3">
+										<label class="form-label">Leave Type</label>
+										<select class="select select2-hidden-accessible"
+											data-select2-id="select2-data-7-r57e" tabindex="-1" aria-hidden="true">
+											<option selected="" data-select2-id="select2-data-9-9uyz">Medical Leave
+											</option>
+											<option>Casual Leave</option>
+											<option>Annual Leave</option>
+										</select><span class="select2 select2-container select2-container--default"
+											dir="ltr" data-select2-id="select2-data-8-4lbf" style="width: 100%;"><span
+												class="selection"><span
+													class="select2-selection select2-selection--single" role="combobox"
+													aria-haspopup="true" aria-expanded="false" tabindex="0"
+													aria-disabled="false" aria-labelledby="select2-6gdp-container"
+													aria-controls="select2-6gdp-container"><span
+														class="select2-selection__rendered" id="select2-6gdp-container"
+														role="textbox" aria-readonly="true"
+														title="Medical Leave">Medical Leave</span><span
+														class="select2-selection__arrow" role="presentation"><b
+															role="presentation"></b></span></span></span><span
+												class="dropdown-wrapper" aria-hidden="true"></span></span>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="mb-3">
+										<label class="form-label">From </label>
+										<div class="input-icon-end position-relative">
+											<input type="text" class="form-control datetimepicker" value="14 Jan 24"
+												placeholder="dd/mm/yyyy">
+											<span class="input-icon-addon">
+												<i class="ti ti-calendar text-gray-7"></i>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="mb-3">
+										<label class="form-label">To </label>
+										<div class="input-icon-end position-relative">
+											<input type="text" class="form-control datetimepicker" value="15/01/24"
+												placeholder="dd/mm/yyyy">
+											<span class="input-icon-addon">
+												<i class="ti ti-calendar text-gray-7"></i>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="mb-3">
+										<div class="input-icon-end position-relative">
+											<input type="text" class="form-control datetimepicker" value="15/01/24"
+												disabled="">
+											<span class="input-icon-addon">
+												<i class="ti ti-calendar text-gray-7"></i>
+											</span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="mb-3">
+										<select class="select select2-hidden-accessible"
+											data-select2-id="select2-data-10-eaav" tabindex="-1" aria-hidden="true">
+											<option>Select</option>
+											<option>Full DAy</option>
+											<option selected="" data-select2-id="select2-data-12-9av8">First Half
+											</option>
+											<option>Second Half</option>
+										</select><span class="select2 select2-container select2-container--default"
+											dir="ltr" data-select2-id="select2-data-11-8tiw" style="width: 100%;"><span
+												class="selection"><span
+													class="select2-selection select2-selection--single" role="combobox"
+													aria-haspopup="true" aria-expanded="false" tabindex="0"
+													aria-disabled="false" aria-labelledby="select2-c9cf-container"
+													aria-controls="select2-c9cf-container"><span
+														class="select2-selection__rendered" id="select2-c9cf-container"
+														role="textbox" aria-readonly="true" title="First Half">First
+														Half</span><span class="select2-selection__arrow"
+														role="presentation"><b
+															role="presentation"></b></span></span></span><span
+												class="dropdown-wrapper" aria-hidden="true"></span></span>
+									</div>
+								</div>
+
+
+								<div class="col-md-12">
+									<div class="d-flex align-items-center mb-3">
+										<div class="form-check me-2">
+											<input class="form-check-input" type="radio" name="leave1" value="option4"
+												id="leave6">
+											<label class="form-check-label" for="leave6">
+												Full Day
+											</label>
+										</div>
+										<div class="form-check me-2">
+											<input class="form-check-input" type="radio" name="leave1" value="option5"
+												id="leave5">
+											<label class="form-check-label" for="leave5">
+												First Half
+											</label>
+										</div>
+										<div class="form-check me-2">
+											<input class="form-check-input" type="radio" name="leave1" value="option6"
+												id="leave4">
+											<label class="form-check-label" for="leave4">
+												Second Half
+											</label>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12">
+									<div class="mb-3">
+										<label class="form-label">Reason</label>
+										<textarea class="form-control" rows="3"> Going to Hospital </textarea>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Cancel</button>
+							<button type="submit" class="btn btn-primary">Save Changes</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			$(document).ready(function () {
+				$('#duration_type').on('change', function () {
+					const val = $(this).val();
+					if (val === 'full') {
+						$('.full-day-field').removeClass('d-none');
+						$('.half-day-field').addClass('d-none');
+					} else if (val === 'half') {
+						$('.half-day-field').removeClass('d-none');
+						$('.full-day-field').addClass('d-none');
+					} else {
+						$('.full-day-field, .half-day-field').addClass('d-none');
+					}
+				});
+			});
+		</script>
+
+<div class="modal fade" id="delete_modal">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content">
+			<div class="modal-body text-center">
+				<span class="avatar avatar-xl bg-transparent-danger text-danger mb-3">
+					<i class="ti ti-trash-x fs-36"></i>
+				</span>
+
+				<h4 class="mb-1">Confirm Delete</h4>
+				<p class="mb-3">This action cannot be undone.</p>
+
+				<div class="d-flex justify-content-center">
+					<a href="javascript:void(0);" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</a>
+
+					<!-- Dynamic delete URL will be added here -->
+	<a id="confirm_delete_btn" href="#" class="btn btn-danger">Yes, Delete</a>
+
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+
+		<!-- /Page Wrapper -->
+
+	</div>
+	<!-- /Main Wrapper -->
+  <script>
+$(document).on("click", ".open-delete-modal", function () {
+
+    // Read the ID
+    let id = $(this).data("id");
+
+    console.log("Clicked ID:", id); // Debug
+
+    // Build delete URL
+    let url = "{% url 'delete_advance_salary' 99999 %}";
+    url = url.replace("99999", id);
+
+    // Assign URL to delete button
+    $("#confirm_delete_btn").attr("href", url);
+});
+</script>
+
+	 <script>
+    // Toggle full/half-day fields
+    $('#duration_type').on('change', function() {
+        if ($(this).val() === 'half') {
+            $('#full-day-fields').hide();
+            $('#half-day-fields').show();
+        } else {
+            $('#full-day-fields').show();
+            $('#half-day-fields').hide();
+        }
+    });
+
+    // Submit form via AJAX
+    $('#leave-form').on('submit', function(e) {
+        e.preventDefault();
+
+        var formData = new FormData(this);
+
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'submit_leave' %}",  // You must define this URL in urls.py
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                alert(response.message || "Leave submitted successfully.");
+                location.reload();
+            },
+            error: function(xhr) {
+                alert("Error occurred: " + xhr.responseText);
+            }
+        });
+    });
+</script>
+
+<script>
+   $(document).on("click", ".update-leave-status", function () {
+    const leaveId = $(this).data("leave-id");
+    const action = $(this).data("action");
+
+    $.ajax({
+        url: "/leave/update-status/",
+        type: "POST",
+        data: {
+            leave_id: leaveId,
+            action: action,
+            csrfmiddlewaretoken: $("input[name='csrfmiddlewaretoken']").val()
+        },
+        success: function (response) {
+            if (response.success) {
+                location.reload(); // Reload to reflect changes
+            } else {
+                alert(response.message || "Something went wrong.");
+            }
+        },
+        error: function () {
+            alert("Request failed.");
+        }
+    });
+});
+
+</script>
+
+	{% include 'js.html' %}
+</body>
+
+
+</html>
