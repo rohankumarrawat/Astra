@@ -1,8 +1,7 @@
 # 🌍 Project Astra  
 ## Data-Driven Real-Time Air Pollution Analytics & Pothole Detection Solution
 
-Project Astra is a smart, scalable, and low-cost urban monitoring system designed to analyze **air pollution** and **road conditions (potholes)** in real time. It leverages sensor data, mobile connectivity, cloud infrastructure, and machine learning to enable **smarter cities, safer roads, and a cleaner environment**.  
-:contentReference[oaicite:0]{index=0}
+Project Astra is a smart, scalable, and low-cost urban monitoring system designed to analyze **air pollution** and **road conditions (potholes)** in real time. It leverages sensor data, mobile connectivity, cloud infrastructure, and machine learning to enable **smarter cities, safer roads, and a cleaner environment**.
 
 ---
 
@@ -34,6 +33,16 @@ Project Astra introduces a **sensor-based real-time monitoring system** that con
 
 ---
 
+## 🔄 Data Workflow (PDF)
+
+The complete system workflow, including **sensor-to-cloud data flow, mobile gateway, ML processing, and alert mechanism**, is documented in the PDF below:
+
+📄 **[View System Workflow (PDF)](docs/workflow.pdf)**
+
+> This workflow explains how data moves from sensors → mobile app → cloud → ML model → alerts.
+
+---
+
 ## 🧩 System Architecture
 
 The system follows a **sensor-to-cloud architecture**:
@@ -41,6 +50,9 @@ The system follows a **sensor-to-cloud architecture**:
 1. **Sensors**
    - Environmental sensors for air quality monitoring
    - Road sensors for vibration and pothole detection
+
+
+   ![Sensor](hardware/eps32/src/image.png)
 
 2. **Mobile Gateway**
    - Acts as an interface between sensors and cloud
@@ -68,6 +80,7 @@ The **Mobile Astra App** provides real-time insights including:
 - Sensor-based data visualization
 
 The app ensures quick and accurate monitoring through a smart and user-friendly interface.
+![Astra App](mobile-app/mobile.png)
 
 ---
 
@@ -80,6 +93,7 @@ The **Astra Dashboard** offers a centralized monitoring platform displaying:
 - Alerts and system health indicators
 
 This dashboard helps authorities make efficient, data-driven decisions.
+![Dashboard](mobile-app/dashboard.png)
 
 ---
 
@@ -148,7 +162,4 @@ Planned enhancements include:
 
 ## 👥 Team
 
-**Team Name:** VoidFillers  
-
-
-
+**Team Name:** VoidFillers
